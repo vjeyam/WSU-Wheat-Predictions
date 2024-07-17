@@ -1,0 +1,21 @@
+{
+  "date_1-5-2024_10.0.11_1.png": {
+    "filename": "date_1-5-2024_10.0.11_1.png",
+    "size": 1276741,
+    "regions": [
+      {
+        "shape_attributes": {
+          "name": "rect",
+          "x": 268,
+          "y": 199,
+          "width": 25,
+          "height": 24
+        },
+        "region_attributes": {
+          "grey_ref_panel": ""
+        }
+      }
+    ],
+    "file_attributes": {}
+  }
+}
