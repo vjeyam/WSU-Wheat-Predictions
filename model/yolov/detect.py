@@ -57,8 +57,8 @@ def save_to_csv(centers_list, output_csv):
     print(f"Saved center coordinates to {output_csv}")
 
 # Process images from all camera folders and save centers to CSV
-centers_list = []
 for i in range(1, 9):
+    centers_list = []  # Reset centers_list for each new camera folder
     process_images(f'../../data/cam{i}', f'../../model_output/cam{i}', centers_list)
     crop_images(f'../../model_output/cam{i}')
     save_to_csv(centers_list, f'../../model_output/cam{i}_centers.csv')
