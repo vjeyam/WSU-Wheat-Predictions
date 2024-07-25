@@ -23,7 +23,7 @@ def process_images(input_folder, output_folder, centers_list):
             cv2.circle(img, (center_x, center_y), 5, (0, 255, 0), -1)
             cv2.putText(img, f'({center_x}, {center_y})', (center_x + 10, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
-            centers_list.append((img_path.name, center_x, center_y))
+            centers_list.append((img_path.name, center_x, center_y, 5, 5))
 
         cv2.imwrite(str(output_path / img_path.name), img)
         print(f"Processed {img_path.name} with center at ({center_x}, {center_y})")
@@ -48,11 +48,11 @@ def crop_images(input_folder):
         cv2.imwrite(str(img_path), resized_img)
         print(f"Cropped and resized {img_path.name}")
 
-# Crop and resize images from all camera folders
+# Save center coordinates to CSV with additional columns 'Width' and 'Height'
 def save_to_csv(centers_list, output_csv):
     with open(output_csv, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['Filename', 'Center_X', 'Center_Y'])
+        writer.writerow(['Filename', 'Center_X', 'Center_Y', 'Width', 'Height'])
         writer.writerows(centers_list)
     print(f"Saved center coordinates to {output_csv}")
 
@@ -61,7 +61,6 @@ centers_list = []
 for i in range(1, 9):
     process_images(f'../../data/cam{i}', f'../../model_output/cam{i}', centers_list)
     crop_images(f'../../model_output/cam{i}')
-
-save_to_csv(centers_list, '../../model_output/centers.csv')
+    save_to_csv(centers_list, f'../../model_output/cam{i}_centers.csv')
 
 print("Processing complete.")
