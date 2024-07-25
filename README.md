@@ -2,6 +2,8 @@
 
 The objective of this project is to extract crop features, such as the Vegetative Index (VI), from multispectral images of crops to predict wheat health and yield in real-time. This tool will aid breeding programs by reducing costs and resource usage.
 
+If you would like to see the in depth process, [click here](Solution.md).
+
 ## Download the Project
 
 You may either download the project as a ZIP or lcone the repository to your local machine:
