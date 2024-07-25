@@ -1,3 +1,5 @@
 best.pt filter=lfs diff=lfs merge=lfs -text
 cam2/*.png filter=lfs diff=lfs merge=lfs -text
 cam8/*.png filter=lfs diff=lfs merge=lfs -text
+cam4/*.png filter=lfs diff=lfs merge=lfs -text
+cam7/*.png filter=lfs diff=lfs merge=lfs -text
