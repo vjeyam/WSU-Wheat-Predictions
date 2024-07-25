@@ -1,6 +1,7 @@
-python>=3.9
+opencv-python-headless
 pandas
 numpy
 matplotlib
 Pillow
-
+pathlib
+ultralytics
