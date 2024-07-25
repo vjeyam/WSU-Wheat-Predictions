@@ -20,8 +20,8 @@ def process_images(input_folder, output_folder, centers_list):
             x1, y1, x2, y2 = map(int, result[:4])
             center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.circle(img, (center_x, center_y), 5, (0, 255, 0), -1)
-            cv2.putText(img, f'({center_x}, {center_y})', (center_x + 10, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # cv2.circle(img, (center_x, center_y), 5, (0, 255, 0), -1)
+            # cv2.putText(img, f'({center_x}, {center_y})', (center_x + 10, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
             centers_list.append((img_path.name, center_x, center_y, 5, 5))
 
@@ -61,6 +61,6 @@ for i in range(1, 9):
     centers_list = []  # Reset centers_list for each new camera folder
     process_images(f'../../data/cam{i}', f'../../model_output/cam{i}', centers_list)
     crop_images(f'../../model_output/cam{i}')
-    save_to_csv(centers_list, f'../../model_output/cam{i}_centers.csv')
+    # save_to_csv(centers_list, f'../../model_output/cam{i}_centers.csv')
 
 print("Processing complete.")
