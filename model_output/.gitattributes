@@ -1,2 +1,0 @@
-cam5/*.png filter=lfs diff=lfs merge=lfs -text
-cam7/*.png filter=lfs diff=lfs merge=lfs -text
