@@ -66,6 +66,14 @@ process_nir_images(input_folder, output_folder_ir)
 Using our original data I labeled all of the data through [Make Sense AI](https://www.makesense.ai/). Once done, I randomly selected 70% of the data to go to training, 20% to validating, and 10% to testing/predicting.
 I trained the model on 200 epochs and got a mAP@0.50[1] of **99.5%** and a mAP@0.50-0.95[2] of **71.0%**. The testing accuracy ranged from **82%** to **85%** on all images.
 
+Training and Validation:
+![Training and Validation Image](/assets/panel/val/PR_curve.png)
+
+![Results Image](/assets/panel/val/results.png)
+
+Testing:
+![Testing Image](/assets/panel/predict/cam8.png)
+
 Once the detection model was completed, we need to locate the center (x,y) coordinates.
 
 We created a script called [`detect.py`](model/panel/detect.py) to do this. Here is the general basis of what `detect.py` does:
