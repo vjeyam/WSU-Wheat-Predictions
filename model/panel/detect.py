@@ -20,47 +20,64 @@ def process_images(input_folder, output_folder, centers_list):
             x1, y1, x2, y2 = map(int, result[:4])
             center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            # cv2.circle(img, (center_x, center_y), 5, (0, 255, 0), -1)
-            # cv2.putText(img, f'({center_x}, {center_y})', (center_x + 10, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            
             centers_list.append((img_path.name, center_x, center_y, 5, 5))
 
         cv2.imwrite(str(output_path / img_path.name), img)
         print(f"Processed {img_path.name} with center at ({center_x}, {center_y})")
 
-# Crop and resize images from 1280 x 928 to 640 x 928
-def crop_images(input_folder):
-    input_path = Path(input_folder)
-    
-    for img_path in input_path.glob('*.png'):
-        img = cv2.imread(str(img_path))
-        if img.shape[1] != 1280 or img.shape[0] != 928:
-            print(f"Skipping {img_path.name} as it does not have the expected dimensions of 1280x928.")
-            continue
-        
-        # Crop the right side to get 640 x 928
-        cropped_img = img[:, :640]
-
-        # Resize the cropped image to 640 x 928 (although it should already be the correct size)
-        resized_img = cv2.resize(cropped_img, (640, 928))
-
-        # Replace the original image with the resized image
-        cv2.imwrite(str(img_path), resized_img)
-        print(f"Cropped and resized {img_path.name}")
-
 # Save center coordinates to CSV with additional columns 'Width' and 'Height'
 def save_to_csv(centers_list, output_csv):
+    # Save the center coordinates to a CSV file
     with open(output_csv, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Filename', 'Center_X', 'Center_Y', 'Width', 'Height'])
         writer.writerows(centers_list)
     print(f"Saved center coordinates to {output_csv}")
 
+# Split the CSV into NIR and RGB based on Center_X value
+def split_csv(input_csv, nir_csv, rgb_csv):
+    nir_centers = []
+    rgb_centers = []
+    
+    # Read the center coordinates from the input CSV file
+    with open(input_csv, mode='r') as file:
+        reader = csv.reader(file)
+        headers = next(reader)
+        for row in reader:
+            center_x = int(row[1])
+            if center_x < 640:
+                nir_centers.append(row)
+            else:
+                # Adjust the center coordinates for the RGB images
+                row[1] = str(center_x - 640)
+                rgb_centers.append(row)
+    
+    # Save the NIR and RGB center coordinates to separate CSV files
+    with open(nir_csv, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(headers)
+        writer.writerows(nir_centers)
+    print(f"Saved NIR center coordinates to {nir_csv}")
+
+    # Save the RGB center coordinates to a separate CSV file
+    with open(rgb_csv, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(headers)
+        writer.writerows(rgb_centers)
+    print(f"Saved RGB center coordinates to {rgb_csv}")
+
 # Process images from all camera folders and save centers to CSV
 for i in range(1, 9):
     centers_list = []  # Reset centers_list for each new camera folder
     process_images(f'../../data/cam{i}', f'../../model_output/cam{i}', centers_list)
-    crop_images(f'../../model_output/cam{i}')
-    save_to_csv(centers_list, f'../../model_output/cam{i}_centers.csv')
+    
+    # Save the center coordinates to a combined CSV file
+    combined_csv = f'../../model_output/cam{i}.csv'
+    save_to_csv(centers_list, combined_csv)
+    
+    # Split the combined CSV into NIR and RGB CSV files
+    nir_csv = f'../../model_output/cam{i}_nir.csv'
+    rgb_csv = f'../../model_output/cam{i}_rgb.csv'
+    split_csv(combined_csv, nir_csv, rgb_csv)
 
 print("Processing complete.")
