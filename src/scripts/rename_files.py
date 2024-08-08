@@ -26,9 +26,7 @@ def rename_files(folder_path):
             
             # Increment the counter
             i += 1
-        else:
-            continue
 
-# Example usage
-folder_path = 'path/to/folder' # Change this to the path of the folder containing the files
-rename_files(folder_path)
+if __name__ == "__main__":
+    folder_path = 'path/to/folder' # Change this to the path of the folder containing the files
+    rename_files(folder_path)
