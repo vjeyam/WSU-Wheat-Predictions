@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-model_name = 'yolo8x-seg'
+model_name = 'yolo8x'
 dataset_name = ''
 
 model = YOLO(f"{model_name}.pt")

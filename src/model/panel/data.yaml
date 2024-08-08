@@ -1,0 +1,8 @@
+path: ../datasets/YOLOv8_TRP/
+
+train: train/images
+val: val/images
+test: test/images
+
+names: 
+  0: TRP
