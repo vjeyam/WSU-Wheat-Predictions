@@ -3,7 +3,7 @@ import subprocess
 import sys
 from typing import Tuple
 from src.scripts import process_rgb_images, process_nir_images
-from model.panel import process_images
+from model.panel.detect import process_images
 from src.scripts.radiometric_correction import apply_correction_to_all_images
 
 def setup_environment():
