@@ -4,7 +4,7 @@ from subprocess import run
 
 def check_requirements_file():
     """Check if the requirements file exists in the current working directory."""
-    return os.path.exists(os.path.join(os.getcwd(), "installation", "../../requirements.txt"))
+    return os.path.exists(os.path.join(os.getcwd(), "installation", "requirements.txt"))
 
 def check_virtual_environment():
     """Check if the virtual environment exists in the current working directory."""
