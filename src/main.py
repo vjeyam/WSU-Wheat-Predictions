@@ -1,23 +1,9 @@
 import os
 import subprocess
 import sys
-from src.scripts import process_rgb_images, process_nir_images, process_cameras
-from model.panel import process_images, save_to_csv, split_csv
-from PIL import Image
-from typing import Tuple
-
-def get_image_dimensions(image_path: str) -> Tuple[int, int]:
-    """
-    Get the dimensions of an image.
-
-    Args:
-        image_path (str): Path to the image file.
-
-    Returns:
-        Tuple[int, int]: The width and height of the image.
-    """
-    with Image.open(image_path) as img:
-        return img.size
+from src.scripts import process_rgb_images, process_nir_images
+from model.panel import process_images
+from src.scripts.radiometric_correction import process_cameras  # Import process_cameras from radiometric_correction
 
 def setup_environment():
     """Ensure that the virtual environment is set up and dependencies are installed."""
@@ -42,9 +28,7 @@ def check_image_dimensions(data_folder):
         if os.path.exists(folder):
             for file in os.listdir(folder):
                 if file.endswith(('.png')):
-                    image_path = os.path.join(folder, file)
-                    # Check image dimensions
-                    dimensions = get_image_dimensions(image_path)
+                    dimensions = get_image_dimensions(os.path.join(folder, file))
                     if dimensions != (640, 928):
                         resize_needed = True
                         break
@@ -54,14 +38,14 @@ def check_image_dimensions(data_folder):
     if resize_needed:
         print("Images need resizing. Calling split_cam_images.py...")
         subprocess.run([sys.executable, "src/scripts/split_cam_images.py"], check=True)
-        # Process RGB and NIR images after resizing
-        process_rgb_images(data_folder, "data/output_rgb")
-        process_nir_images(data_folder, "data/output_nir")
     else:
         print("All images are already 640x928.")
-        # Process RGB and NIR images if no resizing was needed
-        process_rgb_images(data_folder, "data/output_rgb")
-        process_nir_images(data_folder, "data/output_nir")
+
+def get_image_dimensions(image_path):
+    """Get the dimensions of an image."""
+    from PIL import Image
+    with Image.open(image_path) as img:
+        return img.size
 
 def check_csv_files():
     """Check for the presence of CSV files and call detect.py if necessary."""
@@ -76,12 +60,49 @@ def check_csv_files():
         subprocess.run([sys.executable, "../model/panel/detect.py"], check=True)
     else:
         print("All required CSV files are present. Proceeding with radiometric correction...")
-        subprocess.run([sys.executable, "src/scripts/radiometric_correction.py"], check=True)
+        process_cameras(base_path='data/')  # Call process_cameras to handle radiometric correction
 
 def run_segment_script():
-    """Run the script in ../model/wheat/segment.py."""
-    print("Running segmentation script...")
-    subprocess.run([sys.executable, "../model/wheat/segment.py"], check=True)
+    """Run the segmentation script in ../model/wheat/."""
+    model_path = "../model/wheat/best.pt"
+    image_folder = "data/corrected_images/"  # Folder with radiometrically corrected images
+    output_folder = "data/segmented_images/"
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    # Check if model exists
+    if not os.path.exists(model_path):
+        print(f"Model file not found: {model_path}")
+        sys.exit(1)
+    
+    # Run segmentation on all images in the corrected images folder
+    for file in os.listdir(image_folder):
+        if file.endswith(('.png')):
+            input_image_path = os.path.join(image_folder, file)
+            output_image_path = os.path.join(output_folder, os.path.splitext(file)[0] + '_segmented.png')
+            output_text_path = os.path.join(output_folder, os.path.splitext(file)[0] + '_polygon_points.txt')
+            
+            # Call process_rgb_images and process_nir_images if needed
+            process_rgb_images(input_image_path, output_image_path)
+            process_nir_images(input_image_path, output_image_path)
+            
+            # Run segment.py script
+            result = subprocess.run([sys.executable, "../model/wheat/segment.py", model_path, input_image_path],
+                                    capture_output=True, text=True)
+            
+            # Check if segmentation was successful
+            if result.returncode != 0:
+                print(f"Error during segmentation of {input_image_path}:\n", result.stderr)
+                continue
+            
+            # Save polygon points to text file
+            with open(output_text_path, 'w') as file:
+                file.write(result.stdout)
+            
+            print(f"Segmentation completed for {input_image_path}")
+            print(f"Segmented image saved to: {output_image_path}")
+            print(f"Polygon points saved to: {output_text_path}")
 
 def main():
     """Main function to coordinate the workflow."""
@@ -89,23 +110,21 @@ def main():
     # Ensure the environment is set up
     setup_environment()
     
-    data_folder = "../../data/"
+    data_folder = "data/"
 
-    # Step 1: Check image dimensions and process images
+    # Step 1: Check image dimensions
     check_image_dimensions(data_folder)
+
+    # Process RGB and NIR images
+    process_images(data_folder, "data/corrected_images/")
+    
+    # Process cameras (handles radiometric correction)
+    process_cameras(base_path=data_folder)
 
     # Step 2: Check for CSV files and calculate radiometric reflectance if needed
     check_csv_files()
 
-    # Step 3: Process cameras
-    process_cameras()
-
-    # Example usage of YOLO-based processing and CSV handling
-    centers_list = []
-    process_images(data_folder, "data/output_rgb", centers_list)
-    save_to_csv(centers_list, 'data/centers.csv')
-
-    # Step 4: Run the segmentation script
+    # Step 3: Run the segmentation script
     run_segment_script()
 
 if __name__ == "__main__":
