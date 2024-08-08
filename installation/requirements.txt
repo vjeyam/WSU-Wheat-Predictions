@@ -4,3 +4,4 @@ numpy
 matplotlib
 Pillow
 ultralytics
+subprocess32
