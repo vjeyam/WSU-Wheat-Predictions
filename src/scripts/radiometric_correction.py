@@ -1,8 +1,7 @@
 import numpy as np
-import pandas as pd
 import os
 from PIL import Image
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
 # Calibration data for 8 cameras
 calibration_data: Dict[str, Dict[str, float]] = {
@@ -62,7 +61,6 @@ def vi(img: np.ndarray,
     return sci, gndvi
 
 def radiometric_correction(img: np.ndarray, 
-                           cam_name: str, 
                            lut_values: Dict[str, float]
                            ) -> np.ndarray:
     """
@@ -70,13 +68,12 @@ def radiometric_correction(img: np.ndarray,
 
     Args:
         img (np.ndarray): The input image array.
-        cam_name (str): Name of the camera.
         lut_values (Dict[str, float]): Lookup table values for correction.
 
     Returns:
         np.ndarray: The radiometrically corrected image.
     """
-        # Apply correction using calibration data
+    # Apply correction using calibration data
     img_corrected = np.zeros_like(img, dtype=np.float32)
     
     img_corrected[..., 0] = img[..., 0] / lut_values['Blue']
@@ -117,7 +114,7 @@ def apply_correction_to_all_images(input_dir: str, output_dir: str) -> None:
             img = np.array(Image.open(img_path))
             
             # Apply radiometric correction
-            img_corrected = radiometric_correction(img, cam_name, lut_values)
+            img_corrected = radiometric_correction(img, lut_values)
             
             # Save the corrected image
             output_path = os.path.join(cam_output_dir, filename)
