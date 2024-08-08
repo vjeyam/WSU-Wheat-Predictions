@@ -1,14 +1,25 @@
 import os
 import cv2
 
-def process_images(input_dir, output_dir):
+def process_images(input_dir: str, output_dir: str) -> None:
+    """
+    Processes images in the input directory to extract contours from binary masks
+    and convert them to polygons, which are then saved as text files in the output directory.
+
+    Args:
+        input_dir (str): Path to the directory containing input images (binary masks).
+        output_dir (str): Path to the directory where the output polygon files will be saved.
+
+    Returns:
+        None
+    """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     for j in os.listdir(input_dir):
         image_path = os.path.join(input_dir, j)
         
-        # load the binary mask
+        # Load the binary mask
         mask = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         
         if mask is None:
@@ -18,9 +29,9 @@ def process_images(input_dir, output_dir):
         _, mask = cv2.threshold(mask, 1, 255, cv2.THRESH_BINARY)
         
         H, W = mask.shape
-        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        # convert the contours to polygons
+        # Convert the contours to polygons
         polygons = []
         for cnt in contours:
             if cv2.contourArea(cnt) > 200:
@@ -31,7 +42,7 @@ def process_images(input_dir, output_dir):
                     polygon.append([y / H])
                 polygons.append(polygon)
         
-        # print the polygons
+        # Save the polygons
         output_path = os.path.join(output_dir, j)[:-4] + '.txt'
         with open(output_path, 'w') as f:
             for polygon in polygons:
@@ -42,8 +53,6 @@ def process_images(input_dir, output_dir):
                         f.write('0 {}'.format(p))
                     else:
                         f.write('{} '.format(p))
-
-            f.close()
             print(f"Saved {output_path}")
 
 if __name__ == "__main__":

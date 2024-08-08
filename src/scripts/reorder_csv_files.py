@@ -1,7 +1,18 @@
 import os
 import pandas as pd
+from typing import Union
 
-def reorder_csv_files(input_dir):
+def reorder_csv_files(input_dir: str) -> None:
+    """
+    Processes CSV files in the specified directory. Removes rows with NaN values in 'Center_X' or 'Center_Y',
+    sorts the data by 'Filename', and saves the cleaned and sorted data back to the original CSV files.
+
+    Args:
+        input_dir (str): The path to the directory containing CSV files to process.
+
+    Returns:
+        None
+    """
     # Define the naming conventions and range
     prefixes = [f'cam{i}' for i in range(1, 9)]
     suffixes = ['_nir.csv', '_rgb.csv']

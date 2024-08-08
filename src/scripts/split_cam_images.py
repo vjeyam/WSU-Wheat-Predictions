@@ -1,7 +1,18 @@
 import os
 from PIL import Image
+from typing import Union
 
-def process_rgb_images(input_folder, output_folder_rgb):
+def process_rgb_images(input_folder: str, output_folder_rgb: str) -> None:
+    """
+    Processes RGB images from camera folders, extracting and saving the right half of each image.
+
+    Args:
+        input_folder (str): The path to the folder containing camera subfolders with RGB images.
+        output_folder_rgb (str): The path to the folder where the right halves of the RGB images will be saved.
+
+    Returns:
+        None
+    """
     # List all camera folders
     cam_folders = [f'cam{i}' for i in range(1, 9)]
 
@@ -32,7 +43,17 @@ def process_rgb_images(input_folder, output_folder_rgb):
                 
                 print(f"Processed right side of {filename}")
 
-def process_nir_images(input_folder, output_folder_ir):
+def process_nir_images(input_folder: str, output_folder_ir: str) -> None:
+    """
+    Processes NIR images from camera folders, extracting and saving the left half of each image.
+
+    Args:
+        input_folder (str): The path to the folder containing camera subfolders with NIR images.
+        output_folder_ir (str): The path to the folder where the left halves of the NIR images will be saved.
+
+    Returns:
+        None
+    """
     # List all camera folders
     cam_folders = [f'cam{i}' for i in range(1, 9)]
 

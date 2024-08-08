@@ -23,7 +23,21 @@ def vi(img: np.ndarray,
        rgb_y_center: float, 
        cam_name: str
        ) -> Tuple[np.ndarray, np.ndarray]:
-    
+    """
+    Calculates the Soil Color Index (SCI) and Green Normalized Difference Vegetation Index (GNDVI)
+    for a given image based on NIR and RGB center coordinates.
+
+    Args:
+        img (np.ndarray): The input image array.
+        nir_x_center (float): X-coordinate of the NIR center.
+        nir_y_center (float): Y-coordinate of the NIR center.
+        rgb_x_center (float): X-coordinate of the RGB center.
+        rgb_y_center (float): Y-coordinate of the RGB center.
+        cam_name (str): Name of the camera to apply calibration data.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: SCI and GNDVI arrays.
+    """
     height, width, _ = img.shape
     
     # Ensure coordinates are within bounds and cast to integers
@@ -36,120 +50,83 @@ def vi(img: np.ndarray,
         raise ValueError(f'RGB coordinates out of bounds: {rgb_x_center}, {rgb_y_center}')
     if not (5 <= nir_x_center < width - 5 and 5 <= nir_y_center < height - 5):
         raise ValueError(f'NIR coordinates out of bounds: {nir_x_center}, {nir_y_center}')
-    
-    # Split the image into NIR and RGB
-    nir = img[:, :640, :].astype(np.float64)
-    rgb = img[:, 641:1280, :].astype(np.float64)
-    
-    # Extract a 5x5 region around the RGB center coordinates
-    rgb_gray = img[rgb_y_center - 5:rgb_y_center + 5, rgb_x_center - 5:rgb_x_center + 5, :]
-    if rgb_gray.size == 0:
-        raise ValueError(f'RGB region extraction resulted in empty slice: {rgb_x_center}, {rgb_y_center}')
-    
-    # Extract the red, green, and blue bands from the gray region
-    rgb_gray_red: np.ndarray = rgb_gray[:, :, 2].astype(np.float64)
-    rgb_gray_green: np.ndarray = rgb_gray[:, :, 1].astype(np.float64)
-    rgb_gray_blue: np.ndarray = rgb_gray[:, :, 0].astype(np.float64)
-    rgb_gray_red_avg: float = np.mean(rgb_gray_red)
-    rgb_gray_green_avg: float = np.mean(rgb_gray_green)
-    rgb_gray_blue_avg: float = np.mean(rgb_gray_blue)
-    
-    # Convert the RGB image to red, green, blue bands
-    red: np.ndarray = rgb[:, :, 2].astype(np.float64)
-    green: np.ndarray = rgb[:, :, 1].astype(np.float64)
-    blue: np.ndarray = rgb[:, :, 0].astype(np.float64)
-    rgb_red_ref: np.ndarray = (red / rgb_gray_red_avg)
-    rgb_green_ref: np.ndarray = (green / rgb_gray_green_avg)
-    rgb_blue_ref: np.ndarray = (blue / rgb_gray_blue_avg)
-    
-    # Calculate the SCI (Soil Color Index)
-    sci: np.ndarray = (rgb_red_ref - rgb_green_ref) / (rgb_red_ref + rgb_green_ref)
-    
-    # Extract a 5x5 region around the NIR center coordinates
-    nir_gray = img[nir_y_center - 5:nir_y_center + 5, nir_x_center - 5:nir_x_center + 5, :]
-    if nir_gray.size == 0:
-        raise ValueError(f'NIR region extraction resulted in empty slice: {nir_x_center}, {nir_y_center}')
-    
-    # Extract the red, green, and blue bands from the gray region
-    nir_gray_red: np.ndarray = nir_gray[:, :, 2].astype(np.float64)
-    nir_gray_green: np.ndarray = nir_gray[:, :, 1].astype(np.float64)
-    nir_gray_blue: np.ndarray = nir_gray[:, :, 0].astype(np.float64)
-    nir_gray_red_avg: float = np.mean(nir_gray_red)
-    nir_gray_green_avg: float = np.mean(nir_gray_green)
-    nir_gray_blue_avg: float = np.mean(nir_gray_blue)
-    
-    # Convert the NIR image to red, green, blue bands
-    nir_red: np.ndarray = nir[:, :, 2].astype(np.float64)
-    nir_green: np.ndarray = nir[:, :, 1].astype(np.float64)
-    nir_blue: np.ndarray = nir[:, :, 0].astype(np.float64)
 
-    # Apply calibration factors if available
-    if cam_name in calibration_data:
-        calib_factors = calibration_data[cam_name]
-        nir_red_ref: np.ndarray = nir_red / (nir_gray_red_avg * (calib_factors.get('Red', 1.0) / 100.0))
-        nir_green_ref: np.ndarray = nir_green / (nir_gray_green_avg * (calib_factors.get('Green', 1.0) / 100.0))
-        nir_blue_ref: np.ndarray = nir_blue / (nir_gray_blue_avg * (calib_factors.get('Blue', 1.0) / 100.0))
-    else:
-        print(f'No calibration data found for {cam_name}')
-        nir_red_ref, nir_green_ref, nir_blue_ref = nir_red, nir_green, nir_blue
+    # SCI: Red divided by Blue
+    sci = np.divide(img[rgb_y_center, rgb_x_center, 2], img[rgb_y_center, rgb_x_center, 0], out=np.zeros_like(img[..., 0]), where=img[..., 0] != 0)
     
-    # Check for zero denominator and handle division by zero
-    denominator: np.ndarray = nir_red_ref + nir_green_ref
-    if np.any(denominator == 0):
-        print(f'Warning: Zero denominator found in GNDVI calculation.')
-    denominator[denominator == 0] = np.nan  # Avoid division by zero by replacing 0 with NaN
-    
-    # Calculate the GNDVI
-    gndvi: np.ndarray = (nir_red_ref - nir_green_ref) / denominator
-    
+    # GNDVI: (NIR - Green) / (NIR + Green)
+    nir = img[nir_y_center, nir_x_center, 0]
+    green = img[rgb_y_center, rgb_x_center, 1]
+    gndvi = np.divide((nir - green), (nir + green), out=np.zeros_like(nir), where=(nir + green) != 0)
+
     return sci, gndvi
 
-def process_cameras(base_path='../data/', cam_prefix='cam'):
-    for i in range(1, 9):
-        cam_name = f'{cam_prefix}{i}'
-        csv_file = f'../model_output/{cam_name}.csv'
-        cam_folder = os.path.join(base_path, cam_name)
+def radiometric_correction(img: np.ndarray, 
+                           cam_name: str, 
+                           lut_values: Dict[str, float]
+                           ) -> np.ndarray:
+    """
+    Applies radiometric correction to an image based on camera calibration data.
+
+    Args:
+        img (np.ndarray): The input image array.
+        cam_name (str): Name of the camera.
+        lut_values (Dict[str, float]): Lookup table values for correction.
+
+    Returns:
+        np.ndarray: The radiometrically corrected image.
+    """
+        # Apply correction using calibration data
+    img_corrected = np.zeros_like(img, dtype=np.float32)
+    
+    img_corrected[..., 0] = img[..., 0] / lut_values['Blue']
+    img_corrected[..., 1] = img[..., 1] / lut_values['Green']
+    img_corrected[..., 2] = img[..., 2] / lut_values['Red']
+    
+    # Clip values to ensure they are within the correct range
+    np.clip(img_corrected, 0, 255, out=img_corrected)
+    
+    return img_corrected.astype(np.uint8)
+
+def apply_correction_to_all_images(input_dir: str, output_dir: str) -> None:
+    """
+    Applies radiometric correction to all images in the input directory
+    and saves the corrected images to the output directory.
+
+    Args:
+        input_dir (str): Path to the directory containing input images.
+        output_dir (str): Path to the directory where corrected images will be saved.
+
+    Returns:
+        None
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    for cam_name in calibration_data.keys():
+        cam_input_dir = os.path.join(input_dir, cam_name)
+        cam_output_dir = os.path.join(output_dir, cam_name)
         
-        # Read the CSV file to get the center coordinates
-        df: pd.DataFrame = pd.read_csv(csv_file)
+        if not os.path.exists(cam_output_dir):
+            os.makedirs(cam_output_dir)
         
-        # Separate NIR and RGB coordinates based on Center_X value
-        nir_coords = df[df['Center_X'] > 640]
-        rgb_coords = df[df['Center_X'] <= 640]
+        lut_values = calibration_data[cam_name]
         
-        # Assuming there's only one pair of coordinates for NIR and RGB in the CSV
-        nir_x_center: float = float(nir_coords['Center_X'].values[0])
-        nir_y_center: float = float(nir_coords['Center_Y'].values[0])
-        rgb_x_center: float = float(rgb_coords['Center_X'].values[0])
-        rgb_y_center: float = float(rgb_coords['Center_Y'].values[0])
-        
-        # Create directories if they don't exist
-        sci_output_dir = os.path.join('../assets/vi/sci', cam_name)
-        gndvi_output_dir = os.path.join('../assets/vi/gndvi', cam_name)
-        os.makedirs(sci_output_dir, exist_ok=True)
-        os.makedirs(gndvi_output_dir, exist_ok=True)
-        
-        # Process each image in the camera folder
-        for image_file in os.listdir(cam_folder):
-            if image_file.lower().endswith(('.png')):
-                image_path = os.path.join(cam_folder, image_file)
-                
-                # Load the image
-                image: np.ndarray = np.array(Image.open(image_path)).astype(np.float64)
-                
-                # Call the vi function with the appropriate parameters
-                sci, gndvi = vi(image, nir_x_center, nir_y_center, rgb_x_center, rgb_y_center, cam_name)
-                print(f'GNDVI for {cam_name}, {image_file}: {np.nanmean(gndvi)}')  # Print mean value for debugging
-                
-                # Save the results in the assets folder
-                base_filename = os.path.splitext(image_file)[0]
-                
-                # Save SCI and GNDVI images as grayscale
-                sci_image = Image.fromarray((sci * 255).astype(np.uint8))
-                gndvi_image = Image.fromarray((gndvi * 255).astype(np.uint8))
-                
-                sci_image.save(os.path.join(sci_output_dir, f'{base_filename}_sci.png'))
-                gndvi_image.save(os.path.join(gndvi_output_dir, f'{base_filename}_gndvi.png'))
+        for filename in os.listdir(cam_input_dir):
+            img_path = os.path.join(cam_input_dir, filename)
+            img = np.array(Image.open(img_path))
+            
+            # Apply radiometric correction
+            img_corrected = radiometric_correction(img, cam_name, lut_values)
+            
+            # Save the corrected image
+            output_path = os.path.join(cam_output_dir, filename)
+            Image.fromarray(img_corrected).save(output_path)
+            print(f"Saved corrected image: {output_path}")
 
 if __name__ == "__main__":
-    process_cameras()
+    input_dir = '../datasets/wheat/train/images'
+    output_dir = '../datasets/wheat/train/corrected_images'
+    
+    # Apply radiometric corrections to all images in the dataset
+    apply_correction_to_all_images(input_dir, output_dir)

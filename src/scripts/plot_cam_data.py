@@ -3,7 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
 
-def plot_center_values(output_folder='../assets'):
+def plot_center_values(output_folder: str = '../assets') -> None:
+    """
+    Plots and saves the Center_X and Center_Y values from NIR and RGB CSV files
+    for cameras 1 through 8.
+
+    Args:
+        output_folder (str): Path to the directory where the plots will be saved.
+
+    Returns:
+        None
+    """
     for i in range(1, 9):
         # Plot for cam{i}_nir.csv
         nir_df = pd.read_csv(f'../model_output/cam{i}_nir.csv')
@@ -27,7 +37,18 @@ def plot_center_values(output_folder='../assets'):
         plt.savefig(f'{output_folder}/cam{i}_rgb_center_x_y.png')
         plt.close()
 
-def calculate_panel_rgb_values(csv_file, image_folder):
+def calculate_panel_rgb_values(csv_file: str, image_folder: str) -> pd.DataFrame:
+    """
+    Calculates the average RGB values in a 10x10 region centered at the 
+    coordinates specified in the CSV file for each image.
+
+    Args:
+        csv_file (str): Path to the CSV file containing image filenames and center coordinates.
+        image_folder (str): Path to the folder containing images.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the filename, center coordinates, and average RGB values.
+    """
     data = pd.read_csv(csv_file)
     results = []
 
@@ -63,7 +84,14 @@ def calculate_panel_rgb_values(csv_file, image_folder):
     
     return pd.DataFrame(results)
 
-def process_all_cameras():
+def process_all_cameras() -> None:
+    """
+    Processes all camera CSV files to calculate and print the RGB values
+    at the center coordinates for each image.
+
+    Returns:
+        None
+    """
     csv_files = [f"../model_output/cam{i}_centers.csv" for i in range(1, 9)]
     image_folders = [f"../model_output/cam{i}" for i in range(1, 9)]
 
