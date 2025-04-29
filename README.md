@@ -60,3 +60,35 @@ $ conda list
 ```
 
 This command will list all packages installed in the current environment.
+
+### Step 6: Run the Project
+To run the project, navigate to the `src` directory and execute the main script:
+
+```bash
+$ cd src
+$ python image_segmentation.py
+```
+
+This will start the application, and you can follow the on-screen instructions to use the tool.
+
+## Usage
+
+### Step 1: Load the Image
+
+Load the multispectral image of the wheat crop that you want to analyze. The tool supports various image formats, including JPEG, PNG, and TIFF.
+
+### Step 2: Select the Region of Interest (ROI)
+
+Select the region of interest (ROI) in the image. You can use the provided tools to draw a bounding box around the area you want to analyze.
+
+### Step 3: Extract Features
+
+The tool will automatically extract the relevant features from the selected ROI, including the Vegetative Index (VI) and other crop health indicators.
+
+### Step 4: Analyze Results
+
+The extracted features will be displayed in a user-friendly interface, allowing you to analyze the crop health and yield predictions. You can also save the results for further analysis or reporting.
+
+### Step 5: Save Results
+
+You can save the extracted features and analysis results to a file for future reference. The tool supports various file formats, including CSV and Excel.
