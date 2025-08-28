@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import pandas as pd
 import numpy as np
@@ -241,7 +239,6 @@ def process_cameras(data_dir: str, model_output_dir: str, assets_dir: str) -> No
                 os.makedirs(f'{assets_dir}/vi/gndvi/{cam_name}', exist_ok=True)
                 Image.fromarray((sci*255).astype(np.uint8)).save(f'{assets_dir}/vi/sci/{cam_name}/{base_name}_sci.png')
                 Image.fromarray((gndvi*255).astype(np.uint8)).save(f'{assets_dir}/vi/gndvi/{cam_name}/{base_name}_gndvi.png')
-
 
 def main():
     input_folder = '../data'
