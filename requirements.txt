@@ -1,7 +1,0 @@
-opencv-python-headless
-pandas
-numpy
-matplotlib
-Pillow
-ultralytics
-subprocess32

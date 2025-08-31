@@ -5,3 +5,5 @@ data/
 assets/vi/gndvi/
 assets/vi/sci/
 
+# Ignore the notebooks directory
+notebooks/

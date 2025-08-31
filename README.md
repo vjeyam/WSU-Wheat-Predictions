@@ -6,89 +6,92 @@ If you would like to see the in depth process, [click here](Solution.md).
 
 ## Download the Project
 
-You may either download the project as a ZIP or lcone the repository to your local machine:
+Clone the repository to your local machine:
 
 ```bash
-$ git clone https://github.com/vjeyam/WSU-Wheat-Predictions.git
+git clone https://github.com/vjeyam/WSU-Wheat-Predictions.git
+cd WSU-Wheat-Predictions
 ```
 
-## Installation and Setup: Conda
+## Environment Setup
 
-### Step 1: Install Conda
-
-If you haven't installed Conda yet, you can download and install it from the [Anaconda website](https://www.anaconda.com/products/distribution) or [Miniconda website](https://docs.conda.io/en/latest/miniconda.html), depending on your preference and system requirements.
-
-### Step 2: Create a Conda Environment
+### Option 1: Using Conda (Recommended)
 
 Create a new Conda environment for the project using the following command. Please note that any version of python greater than 3.9 should work.
 
 ```bash
-$ conda create --name wheat python=3.9
+conda create --name wheat python=3.9 -y
+conda activate wheat
 ```
 
-Replace `wheat` with the desired name for your environment.
-
-### Step 3: Activate the Environment
-
-Activate the newly created environment with the following command:
+Install Dependencies
 
 ```bash
-$ conda activate wheat
+# From the root directory of the project
+pip install -r installation/requirements.txt
 ```
 
-### Step 4: Install Dependencies
+### Option 2: Using Virtualenv
 
-Navigate outside the `src` directory and install the required dependencies using `pip` or `conda`:
+Place setup_env.py at the repo root (already included). It expects installation/requirements.txt and creates yolo8_venv/ alongside it
 
 ```bash
-$ cd ..
-$ pip install -r requirements.txt
+# From repo root
+python3 setup_env.py
+
+# Activate the venv
+
+# Windows:
+.\yolo8_venv\Scripts\activate
+
+# macOS/Linux/WSL:
+source yolo8_venv/bin/activate
 ```
 
-### Step 5: Verify Installation
+Notes:
 
-Verifity that the environmnet and dependencies are install correclty:
+* The script checks for installation/requirements.txt and installs from there.
+* If you see errors about subprocess32, remove it (Python 3 doesn’t need it). It’s currently listed in your requirements.
+
+### PyTorch Installation:
+
+Pick one:
 
 ```bash
-$ python --version
+# CPU only
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# CUDA 12.4 (example)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 ```
 
-This should display the Python version installed in your Conda environment.
+Then install the rest (as above).
 
-```bash
-$ conda list
-```
+## What’s included
 
-This command will list all packages installed in the current environment.
-
-### Step 6: Run the Project
-To run the project, navigate to the `src` directory and execute the main script:
-
-```bash
-$ cd src
-$ python image_segmentation.py
-```
-
-This will start the application, and you can follow the on-screen instructions to use the tool.
+* Image processing & indices: src/image_segmentation.py (splits NIR/RGB, computes SCI/GNDVI, saves plots).
+* Panel detection model (YOLOv8): training/validation/testing scripts.
+<!-- * (Wheat model scripts are similar; see “Datasets: wheat” when you add those files.) -->
 
 ## Usage
 
-### Step 1: Load the Image
+From the project root, run:
 
-Load the multispectral image of the wheat crop that you want to analyze. The tool supports various image formats, including JPEG, PNG, and TIFF.
+```bash
+cd src
+python image_segmentation.py
+```
 
-### Step 2: Select the Region of Interest (ROI)
+That launches the processing flow and saves outputs to `assets/` (center plots, SCI/GNDVI visualizations). This matches your original step
 
-Select the region of interest (ROI) in the image. You can use the provided tools to draw a bounding box around the area you want to analyze.
+> Behind the scenes the script reads model_output/cam{i}_nir.csv and cam{i}_rgb.csv, clamps the sampling windows, and normalizes the SCI/GNDVI images to avoid NaN/Inf warnings. (These robust guards are implemented in the current script.)
 
-### Step 3: Extract Features
+## Troubleshooting
 
-The tool will automatically extract the relevant features from the selected ROI, including the Vegetative Index (VI) and other crop health indicators.
+* Ultralytics settings banner: harmless info on first run; you can ignore it.
+* “Source not found” in test.py: pass --source datasets/YOLOv8_TRP/test/images, or use the robust resolver in the updated script (it tries multiple candidate paths when path: is relative).
+* NaN/Inf warnings when saving SCI/GNDVI: the current script bounds windows and normalizes before Image.fromarray, preventing these warnings.
 
-### Step 4: Analyze Results
+## Credits
 
-The extracted features will be displayed in a user-friendly interface, allowing you to analyze the crop health and yield predictions. You can also save the results for further analysis or reporting.
-
-### Step 5: Save Results
-
-You can save the extracted features and analysis results to a file for future reference. The tool supports various file formats, including CSV and Excel.
+WSU Summer REEU 2024 program, with special thanks to Dr. Sindhuja Sankaran.

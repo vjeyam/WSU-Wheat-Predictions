@@ -1,0 +1,19 @@
+# --- Core for YOLOv8 training/inference ---
+ultralytics>=8.2.0
+opencv-python>=4.9
+PyYAML>=6.0
+pillow>=10.0
+matplotlib>=3.8
+pandas>=2.0
+numpy>=1.26
+tqdm>=4.65
+scipy>=1.11
+seaborn>=0.12
+
+# --- Optional: evaluation/exports ---
+# pycocotools; platform_system!="Windows"
+# pycocotools-windows; platform_system=="Windows"
+# onnx
+# onnxruntime         
+# onnxruntime-gpu   
+# tensorboard       
