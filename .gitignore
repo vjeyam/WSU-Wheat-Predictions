@@ -1,0 +1,7 @@
+# Ignore all new files in data directory
+data/
+
+# Ignore all new files in the assets/gndvi and assets/sci directories
+assets/vi/gndvi/
+assets/vi/sci/
+
